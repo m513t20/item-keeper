@@ -5,4 +5,4 @@
 * Носаченко Альберт (Mumok4)
 
 ## задания
-1. задание ![git-branches](/git-branches)
+1. задание [git-branches](/git-branches)
