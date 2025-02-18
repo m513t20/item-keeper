@@ -16,17 +16,19 @@ class CLI_client:
     
         match choice:
             case "sign in":
-                pass
+                name=questionary.text("Username:").ask()
+                pwd=questionary.password("Password:").ask()
+                requests.post(f"http://127.0.0.1:8000",json={"username":name,"password":pwd})
+                self.start()
             case "upload csv":
-                pass
+                self.start()
             case "get users list":
-                pass
+                self.start()
             case "get csv":
-                pass
+                self.start()
             case "get csv json":
-                pass
+                self.start()
 
 
-cli=CLI_client()
-cli.start()
+
 
