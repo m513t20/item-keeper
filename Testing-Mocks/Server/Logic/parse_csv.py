@@ -16,7 +16,3 @@ def parse_csv(csv_string):
         data.append(row_dict)
 
     return data
-print(parse_csv("""   sddf da,sasd,asd
-sda
-s d,sad,as
-                """))
