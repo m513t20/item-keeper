@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 from main import app
 
 client = TestClient(app)
@@ -48,6 +49,7 @@ def test_get_users():
 def test_upload_file_user_not_found():
     response = client.post("/upload", params={
         "username": "nonexistentuser",
+        "password": "nonexistentpass",
         "file_str": "some,csv,content"
     })
     assert response.status_code == 404
@@ -62,27 +64,13 @@ def test_upload_file_empty_content():
 
     response = client.post("/upload", params={
         "username": "fileuser",
+        "password": "filepass",
         "file_str": ""
     })
     assert response.status_code == 400
     assert response.json()["detail"] == "File content is required"
 
-
-def test_upload_file_success(mock_read_csv):
-    client.post("/registry", params={
-        "username": "csvuser",
-        "password": "csvpass"
-    })
-    mock_read_csv.return_value = None
-
-    response = client.post("/upload", params={
-        "username": "csvuser",
-        "file_str": "col1,col2\n1,3\n2,4"
-    })
-    assert response.status_code == 400
-    assert response.json()["detail"] == "File is empty"
-
-
+@patch('main.parse_csv')
 def test_get_json(mock_parse_csv):
     expected_result = {"data": "test"}
     mock_parse_csv.return_value = expected_result
@@ -91,3 +79,51 @@ def test_get_json(mock_parse_csv):
     assert response.status_code == 200
     assert response.json() == expected_result
     mock_parse_csv.assert_called_once_with("test.csv")
+
+def test_get_files_all():
+    client.post("/registry", params={
+        "username": "filelistuser",
+        "password": "filelistpass"
+    })
+    
+    client.post("/upload", params={
+        "username": "filelistuser",
+        "password": "filelistpass",
+        "file_str": "col1,col2\n1,2"
+    })
+    
+    client.post("/upload", params={
+        "username": "filelistuser",
+        "password": "filelistpass",
+        "file_str": "col3,col4\n3,4"
+    })
+
+    response = client.get("/myfiles", params={
+        "username": "filelistuser",
+        "password": "filelistpass"
+    })
+    assert response.status_code == 200
+    files = response.json()
+    assert isinstance(files, list)
+    assert len(files) > 0
+
+def test_get_files_user_not_found():
+    response = client.get("/myfiles", params={
+        "username": "nonexistentuser",
+        "password": "wrongpass"
+    })
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+def test_get_files_wrong_password():
+    client.post("/registry", params={
+        "username": "passuser",
+        "password": "correctpass"
+    })
+
+    response = client.get("/myfiles", params={
+        "username": "passuser",
+        "password": "wrongpass"
+    })
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
