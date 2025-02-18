@@ -52,16 +52,13 @@ def upload_file(username: str,password:str, file_str: str = Query(...)):
 def get_files_all(username:str,password:str):
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
-    return stor.data[storage.get_user_key()][username].data
+    return parse_csv(stor.data[storage.get_user_key()][username].data[-1])
 
 
 def start_sever():
-    uvicorn.run(app, host="127.0.0.1", port=5050)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
-@app.get("/json/{string}")
-def get_json(string:str):
-    return parse_csv(string)
 
 
 if __name__ == '__main__':
