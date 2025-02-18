@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 import pandas as pd
 from Models.Usermodel import UserModel
 from Logic.storage import storage
+from Logic.parse_csv import parse_csv
 import uvicorn
 
 app = FastAPI()
@@ -42,6 +43,12 @@ def upload_file(username: str, file_str: str = Query(...)):
     if df:
         stor.data[storage.get_user_key()][username].data.append(df)
     raise HTTPException(status_code=400, detail = "File is empty")
+
+
+@app.get("/json/{string}")
+def get_json(string:str):
+    return parse_csv(string)
+
 
 if __name__ == '__main__':
     uvicorn.run(app, host="127.0.0.1", port=5050)
