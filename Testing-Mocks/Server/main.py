@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from Models.Usermodel import UserModel
 from Logic.storage import storage
 import uvicorn
@@ -14,14 +14,16 @@ def sign_user(username:str,password:str):
     if user.username in stor.data[storage.get_user_key()].keys():
         return {"already used":"200"}
     
-    
+
     stor.data[storage.get_user_key()][user.username]=user
     print(f"saved user: {user.username}")
     print(stor.data)
 
     return {"exit_code":"200"}
 
-
+@app.get("/users")
+def get_users():
+    return list(stor.data[storage.get_user_key()].keys())
 
 
 if __name__=='__main__':
