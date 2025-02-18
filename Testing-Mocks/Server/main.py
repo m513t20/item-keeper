@@ -7,7 +7,7 @@ app=FastAPI()
 stor=storage()
 stor.data[storage.get_user_key()]={}
 
-@app.get("/registry")
+@app.post("/registry")
 def sign_user(username:str,password:str):
     user=UserModel(username,password)
     
