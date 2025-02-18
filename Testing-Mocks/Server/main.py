@@ -1,4 +1,6 @@
-from fastapi import Query
+from fastapi import Query, Form
+from fastapi import Body
+from fastapi import File, UploadFile
 from fastapi import FastAPI, HTTPException
 from CLI.CLI import CLI_client
 from Logic.parse_csv import parse_csv
@@ -8,6 +10,7 @@ from Logic.parse_csv import parse_csv
 import uvicorn
 import time
 import threading
+import codecs
 
 app = FastAPI()
 stor = storage()
@@ -16,7 +19,7 @@ stor.data[storage.get_user_key()] = {}
 cli=CLI_client()
 
 @app.post("/registry")
-def sign_user(username: str, password: str):
+def sign_user(username: str=Body(...,embed=True), password: str=Body(...,embed=True)):
     user = UserModel(username, password)
 
     if user.username in stor.data[storage.get_user_key()].keys():
@@ -35,7 +38,9 @@ def get_users():
 
 
 @app.post("/upload")
-def upload_file(username: str,password:str, file_str: str = Query(...)):
+def upload_file(username: str=Form(...,embed=True),password:str=Form(...,embed=True), file_str: UploadFile = File(...)):
+    file_str=file_str.file.read().decode('ascii')
+    print(file_str)
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -49,19 +54,18 @@ def upload_file(username: str,password:str, file_str: str = Query(...)):
     return {"succes":"200"}
 
 @app.get("/myfiles")
-def get_files_all(username:str,password:str):
+def get_files_all(username:str=Body(...,embed=True),password:str=Body(...,embed=True)):
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
-    return stor.data[storage.get_user_key()][username].data
+    if len(stor.data[storage.get_user_key()][username].data)==0:
+        raise HTTPException(status_code=404, detail="Data not found")
+    return parse_csv(stor.data[storage.get_user_key()][username].data[-1])
 
 
 def start_sever():
-    uvicorn.run(app, host="127.0.0.1", port=5050)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
-@app.get("/json/{string}")
-def get_json(string:str):
-    return parse_csv(string)
 
 
 if __name__ == '__main__':
