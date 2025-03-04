@@ -1,4 +1,6 @@
-from fastapi import Query
+from fastapi import Query, Form
+from fastapi import Body
+from fastapi import File, UploadFile
 from fastapi import FastAPI, HTTPException
 from CLI.CLI import CLI_client
 from Logic.parse_csv import parse_csv
@@ -8,6 +10,7 @@ from Logic.parse_csv import parse_csv
 import uvicorn
 import time
 import threading
+import codecs
 
 app = FastAPI()
 stor = storage()
@@ -16,7 +19,7 @@ stor.data[storage.get_user_key()] = {}
 cli=CLI_client()
 
 @app.post("/registry")
-def sign_user(username: str, password: str):
+def sign_user(username: str=Body(...,embed=True), password: str=Body(...,embed=True)):
     """
     Registration endpoint
     Args:
@@ -38,6 +41,7 @@ def sign_user(username: str, password: str):
     return {"exit_code": "200"}
 
 
+
 @app.get("/users")
 def get_users():
     """
@@ -48,7 +52,7 @@ def get_users():
 
 
 @app.post("/upload")
-def upload_file(username: str,password:str, file_str: str = Query(...)):
+def upload_file(username: str=Form(...,embed=True),password:str=Form(...,embed=True), file_str: UploadFile = File(...)):
     """
     endpoint for uploading files
     Args:
@@ -60,6 +64,8 @@ def upload_file(username: str,password:str, file_str: str = Query(...)):
     Raises:
         HTTPException: data havent parsed correctly or empty file
     """
+    file_str=file_str.file.read().decode('ascii')
+    print(file_str)
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -72,8 +78,9 @@ def upload_file(username: str,password:str, file_str: str = Query(...)):
     stor.data[storage.get_user_key()][username].data.append(file_str)
     return {"succes":"200"}
 
+
 @app.get("/myfiles")
-def get_files_all(username:str,password:str):
+def get_files_all(username:str=Body(...,embed=True),password:str=Body(...,embed=True)):
     """
     Gets your file
     Args:
@@ -86,7 +93,10 @@ def get_files_all(username:str,password:str):
     """
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
-    return stor.data[storage.get_user_key()][username].data
+    if len(stor.data[storage.get_user_key()][username].data)==0:
+        raise HTTPException(status_code=404, detail="Data not found")
+    return parse_csv(stor.data[storage.get_user_key()][username].data[-1])
+
 
 
 def start_sever():
