@@ -1,4 +1,10 @@
 class storage:
+    """
+    storage of our users and their data
+    
+    Atributes:
+        __data: dictionary of stored data
+    """
     __data={}
 
 

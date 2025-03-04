@@ -20,6 +20,15 @@ cli=CLI_client()
 
 @app.post("/registry")
 def sign_user(username: str=Body(...,embed=True), password: str=Body(...,embed=True)):
+    """
+    Registration endpoint
+    Args:
+        username: name under which we will store your csv
+        password: protection password for your csv
+    returns:
+        json: {response:code}
+
+    """
     user = UserModel(username, password)
 
     if user.username in stor.data[storage.get_user_key()].keys():
@@ -32,13 +41,29 @@ def sign_user(username: str=Body(...,embed=True), password: str=Body(...,embed=T
     return {"exit_code": "200"}
 
 
+
 @app.get("/users")
 def get_users():
+    """
+        returns:
+            array of users
+    """
     return list(stor.data[storage.get_user_key()].keys())
 
 
 @app.post("/upload")
 def upload_file(username: str=Form(...,embed=True),password:str=Form(...,embed=True), file_str: UploadFile = File(...)):
+    """
+    endpoint for uploading files
+    Args:
+        username
+        password
+        file_str: binary read file
+    Returns:
+        json {message:code}
+    Raises:
+        HTTPException: data havent parsed correctly or empty file
+    """
     file_str=file_str.file.read().decode('ascii')
     print(file_str)
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
@@ -53,8 +78,19 @@ def upload_file(username: str=Form(...,embed=True),password:str=Form(...,embed=T
     stor.data[storage.get_user_key()][username].data.append(file_str)
     return {"succes":"200"}
 
+
 @app.get("/myfiles")
 def get_files_all(username:str=Body(...,embed=True),password:str=Body(...,embed=True)):
+    """
+    Gets your file
+    Args:
+        username: your username
+        password: your password
+    Returns:
+        your csv file as json
+    Raises:
+        HTTPException: if user nor found or password is incorrect
+    """
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
     if len(stor.data[storage.get_user_key()][username].data)==0:
@@ -62,10 +98,24 @@ def get_files_all(username:str=Body(...,embed=True),password:str=Body(...,embed=
     return parse_csv(stor.data[storage.get_user_key()][username].data[-1])
 
 
+
 def start_sever():
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    """
+    starts server
+    """
+    uvicorn.run(app, host="127.0.0.1", port=5050)
 
 
+@app.get("/json/{string}")
+def get_json(string:str):
+    """
+    parses csv as json string
+    Args:
+        string: your csv data
+    Returns:
+        json string of your csv
+    """
+    return parse_csv(string)
 
 
 if __name__ == '__main__':
@@ -74,7 +124,3 @@ if __name__ == '__main__':
     server_thread.start()
     time.sleep(1)
     cli.start()
-"""
-a,b,c
-d,e,f
-"""

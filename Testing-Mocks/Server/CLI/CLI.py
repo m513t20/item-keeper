@@ -11,10 +11,16 @@ class CLI_client:
         URL=url
 
     def _default_choice(self):
+        """
+        opens choice
+        """
         start_question=questionary.select("Choose what do you want to do",["sign in","upload csv","get users list","get csv"]).ask()
         return start_question
     
     def start(self):
+        """
+        starts CLI client
+        """
         choice=self._default_choice()
         match choice:
             case "sign in":
@@ -49,8 +55,5 @@ class CLI_client:
                 if csv.status_code==200:
                     print(csv.json())
                 self.start()
-
-
-
 
 
