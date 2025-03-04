@@ -5,7 +5,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../testing_mocks/server'))  # Указывает на корневую папку проекта
+sys.path.insert(0, os.path.abspath('../Testing-Mocks/Server'))  # Указывает на корневую папку проекта
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
