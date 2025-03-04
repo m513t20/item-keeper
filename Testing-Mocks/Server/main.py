@@ -17,6 +17,15 @@ cli=CLI_client()
 
 @app.post("/registry")
 def sign_user(username: str, password: str):
+    """
+    Registration endpoint
+    Args:
+        username: name under which we will store your csv
+        password: protection password for your csv
+    returns:
+        json: {response:code}
+
+    """
     user = UserModel(username, password)
 
     if user.username in stor.data[storage.get_user_key()].keys():
@@ -31,11 +40,26 @@ def sign_user(username: str, password: str):
 
 @app.get("/users")
 def get_users():
+    """
+        returns:
+            array of users
+    """
     return list(stor.data[storage.get_user_key()].keys())
 
 
 @app.post("/upload")
 def upload_file(username: str,password:str, file_str: str = Query(...)):
+    """
+    endpoint for uploading files
+    Args:
+        username
+        password
+        file_str: binary read file
+    Returns:
+        json {message:code}
+    Raises:
+        HTTPException: data havent parsed correctly or empty file
+    """
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -50,17 +74,37 @@ def upload_file(username: str,password:str, file_str: str = Query(...)):
 
 @app.get("/myfiles")
 def get_files_all(username:str,password:str):
+    """
+    Gets your file
+    Args:
+        username: your username
+        password: your password
+    Returns:
+        your csv file as json
+    Raises:
+        HTTPException: if user nor found or password is incorrect
+    """
     if username not in stor.data[storage.get_user_key()] or password!=stor.data[storage.get_user_key()][username].password:
         raise HTTPException(status_code=404, detail="User not found")
     return stor.data[storage.get_user_key()][username].data
 
 
 def start_sever():
+    """
+    starts server
+    """
     uvicorn.run(app, host="127.0.0.1", port=5050)
 
 
 @app.get("/json/{string}")
 def get_json(string:str):
+    """
+    parses csv as json string
+    Args:
+        string: your csv data
+    Returns:
+        json string of your csv
+    """
     return parse_csv(string)
 
 
@@ -70,7 +114,3 @@ if __name__ == '__main__':
     server_thread.start()
     time.sleep(1)
     cli.start()
-"""
-a,b,c
-d,e,f
-"""
