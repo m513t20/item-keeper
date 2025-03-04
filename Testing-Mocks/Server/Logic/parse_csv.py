@@ -1,6 +1,14 @@
 import csv
 
 def parse_csv(csv_string):
+    """
+    Parses csv to json string
+    Args:
+        csv_string: input csv string
+    Returns:
+        data: parsed hsin string
+
+    """
     data = []
     lines = csv_string.strip().split("\n")
     if not lines:
