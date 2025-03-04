@@ -1,11 +1,14 @@
+Модули проекта
+==============
+
 .. automodule:: CLI.CLI
    :members:
 
-.. automodule:: Logic.Parse_csv
+.. automodule:: Logic.parse_csv
    :members:
 
-.. automodule:: Logic.Storage
+.. automodule:: Logic.storage
    :members:
 
-.. automodule:: models.Usermodel
+.. automodule:: Models.Usermodel
    :members:
